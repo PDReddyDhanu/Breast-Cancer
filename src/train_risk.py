@@ -1,0 +1,26 @@
+import joblib
+from sklearn.ensemble import RandomForestClassifier
+from preprocess import load_data
+
+
+# Load data
+X, _, _, y_risk, _, _, _, _ = load_data("dataset/raw_qol_data.csv")
+
+
+# Train model
+model = RandomForestClassifier(
+    n_estimators=100,
+    random_state=42
+)
+
+print("Training Risk Classifier...")
+model.fit(X, y_risk)
+
+
+# Save
+joblib.dump(
+    model,
+    "../saved_models/risk_classifier_model.pkl"
+)
+
+print("✅ Risk Model Saved")

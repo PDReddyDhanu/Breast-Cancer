@@ -1,0 +1,38 @@
+import joblib
+from sklearn.ensemble import RandomForestRegressor
+from preprocess import load_data
+
+
+# Load data
+X, _, y_sev, _, _, _, enc2, _ = load_data("../dataset/raw_qol_data.csv")
+
+
+# Convert severity labels to scores
+severity_text = enc2.inverse_transform(y_sev)
+
+severity_map = {
+    "Low": 20,
+    "Medium": 60,
+    "High": 90
+}
+
+y_score = [severity_map[s] for s in severity_text]
+
+
+# Train Regression Model
+model = RandomForestRegressor(
+    n_estimators=100,
+    random_state=42
+)
+
+print("Training Regression Model...")
+model.fit(X, y_score)
+
+
+# Save Model
+joblib.dump(
+    model,
+    "../saved_models/regression_severity_model.pkl"
+)
+
+print("✅ Regression Model Saved")

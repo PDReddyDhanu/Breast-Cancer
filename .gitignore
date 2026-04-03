@@ -1,0 +1,12 @@
+# Python bytecode
+__pycache__/
+*.pyc
+
+# Virtual environments
+.venv/
+
+# Gradio cache
+.gradio/
+
+# Sensitive environment variables
+.env
