@@ -364,7 +364,8 @@ def get_mongodb_collection():
         return None
         
     try:
-        client = MongoClient(uri, server_api=ServerApi('1'))
+        import certifi
+        client = MongoClient(uri, server_api=ServerApi('1'), tlsCAFile=certifi.where())
         # Send a ping to confirm a successful connection
         client.admin.command('ping')
         db = client["breast_care_ai"]
