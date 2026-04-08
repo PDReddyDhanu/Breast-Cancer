@@ -35,21 +35,21 @@ st.markdown("""
 
 /* Root Variables */
 :root {
-    --primary: #F57C00;
-    --primary-dark: #E65100;
-    --primary-glow: rgba(245, 124, 0, 0.25);
-    --accent: #FFCA28;
-    --accent-glow: rgba(255, 202, 40, 0.2);
-    --success: #00Bfa5;
-    --warning: #FFB300;
-    --danger: #D32F2F;
-    --bg-main: #F4F5F7;
-    --bg-card: #FFFFFF;
-    --bg-card2: #FFFFFF;
-    --bg-input: #FFFFFF;
-    --border: rgba(0, 0, 0, 0.1);
-    --text: #000000;
-    --text-muted: #000000;
+    --primary: #e91e8c;
+    --primary-dark: #c2185b;
+    --primary-glow: rgba(233,30,140,0.25);
+    --accent: #00d4ff;
+    --accent-glow: rgba(0,212,255,0.2);
+    --success: #00e676;
+    --warning: #ffab40;
+    --danger: #ff5252;
+    --bg-main: #0a0e1a;
+    --bg-card: #111827;
+    --bg-card2: #1a2235;
+    --bg-input: #0d1526;
+    --border: rgba(255,255,255,0.07);
+    --text: #f0f4ff;
+    --text-muted: #7b8aad;
     --font: 'Inter', sans-serif;
     --mono: 'JetBrains Mono', monospace;
 }
@@ -67,13 +67,13 @@ html, body, [class*="css"] {
 
 /* App background */
 .stApp {
-    background: #F4F5F7 !important;
+    background: linear-gradient(135deg, #0a0e1a 0%, #0d1526 50%, #0a0e1a 100%) !important;
     background-attachment: fixed !important;
 }
 
 /* Sidebar */
 section[data-testid="stSidebar"] {
-    background: #FFFFFF !important;
+    background: linear-gradient(180deg, #0d1526 0%, #111827 100%) !important;
     border-right: 1px solid var(--border) !important;
     width: 300px !important;
 }
@@ -155,13 +155,13 @@ section[data-testid="stSidebar"] > div {
 .badge-low { background: rgba(0,230,118,0.15); color: #00e676; border: 1px solid rgba(0,230,118,0.3); }
 
 .terminal-box {
-    background: #1E1E1E;
-    border: 1px solid rgba(245, 124, 0, 0.3);
+    background: #060a12;
+    border: 1px solid rgba(0,212,255,0.2);
     border-radius: 12px;
     padding: 1rem 1.2rem;
     font-family: var(--mono) !important;
     font-size: 0.78rem;
-    color: #FFFFFF;
+    color: #00e676;
     max-height: 350px;
     overflow-y: auto;
     white-space: pre-wrap;
@@ -170,8 +170,8 @@ section[data-testid="stSidebar"] > div {
 }
 
 .terminal-header {
-    background: #000000;
-    border: 1px solid rgba(245, 124, 0, 0.3);
+    background: #0d1526;
+    border: 1px solid rgba(0,212,255,0.15);
     border-bottom: none;
     border-radius: 12px 12px 0 0;
     padding: 0.6rem 1rem;
@@ -187,7 +187,7 @@ section[data-testid="stSidebar"] > div {
 
 /* Sliders */
 div[data-baseweb="slider"] > div {
-    background: rgba(245, 124, 0, 0.3) !important;
+    background: rgba(233,30,140,0.3) !important;
 }
 div[data-baseweb="slider"] [data-testid="stTickBar"] { color: var(--text-muted) !important; }
 
@@ -816,20 +816,20 @@ if page == "🏠 Home":
 # ════════════════════════════════════════════════════════════════════════════
 elif page == "🔬 Predict":
 
-    st.markdown('<div class="hero-title" style="font-size:2rem; color: #F57C00;">🔬 Patient Prediction</div>', unsafe_allow_html=True)
-    st.markdown('<div class="hero-subtitle" style="color: #000000;">Enter patient Quality of Life (QoL) scores to get AI predictions.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-title" style="font-size:2rem; color: #e91e8c;">🔬 Patient Prediction</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-subtitle" style="color: #7b8aad;">Enter patient Quality of Life (QoL) scores to get AI predictions.</div>', unsafe_allow_html=True)
 
     with st.expander("📊 Score Interpretation Guide (Click to Expand)", expanded=False):
         st.markdown("""
-        <div style="background: #FFFFFF; padding: 15px; border-radius: 8px; border: 1px solid #FFCA28;">
-        <h4 style="color: #F57C00; margin-top:0;">0-30: Mild | 31-70: Moderate | 71-100: Severe</h4>
-        <ul style="color: #000000;">
+        <div style="background: #111827; padding: 15px; border-radius: 8px; border: 1px solid rgba(0,212,255,0.3);">
+        <h4 style="color: #00d4ff; margin-top:0;">0-30: Mild | 31-70: Moderate | 71-100: Severe</h4>
+        <ul style="color: #f0f4ff;">
           <li><b>💪 Fatigue:</b> 0-30 Normal | 31-70 Weak | 71-100 Extreme</li>
           <li><b>🤢 Nausea:</b> 0-30 Little discomfort | 31-70 Vomiting sometimes | 71-100 Severe</li>
           <li><b>⚡ Neuropathy:</b> 0-30 Mild tingling | 31-70 Numbness/Pain | 71-100 Severe pain</li>
           <li><b>🩸 Hematologic:</b> Correlated indirectly with immune weakness / anemia.</li>
         </ul>
-        <p style="color: #D32F2F; font-size:0.9em; margin-bottom:0;">🚨 <i>Note: Very high scores (> 70) require immediate symptom management but do not exclusively calculate generic cancer risk alone. Scans and biopsies are required for diagnosis.</i></p>
+        <p style="color: #ff5252; font-size:0.9em; margin-bottom:0;">🚨 <i>Note: Very high scores (> 70) require immediate symptom management but do not exclusively calculate generic cancer risk alone. Scans and biopsies are required for diagnosis.</i></p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -841,9 +841,9 @@ elif page == "🔬 Predict":
 
     with col_form:
         st.markdown("""
-        <div style="background: #FFFFFF; border:1px solid rgba(0,0,0,0.1); box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        <div style="background: #1a2235; border:1px solid rgba(255,255,255,0.07); box-shadow: 0 4px 6px rgba(0,0,0,0.2);
              border-radius:20px; padding:1.5rem 1.5rem 0.5rem 1.5rem; margin-bottom:1rem;">
-            <div class="section-header" style="font-size:1.1rem; margin-bottom:1rem; color: #F57C00;">
+            <div class="section-header" style="font-size:1.1rem; margin-bottom:1rem; color: #e91e8c;">
                 👤 Patient Demographics & Identity
             </div>
         """, unsafe_allow_html=True)
@@ -860,9 +860,9 @@ elif page == "🔬 Predict":
         st.markdown("</div>", unsafe_allow_html=True)
 
         st.markdown("""
-        <div style="background: #FFFFFF; border:1px solid rgba(0,0,0,0.1); box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        <div style="background: #1a2235; border:1px solid rgba(255,255,255,0.07); box-shadow: 0 4px 6px rgba(0,0,0,0.2);
              border-radius:20px; padding:1.5rem 1.5rem 0.5rem 1.5rem; margin-bottom:1rem;">
-            <div class="section-header" style="font-size:1.1rem; margin-bottom:1rem; color: #B8860B;">
+            <div class="section-header" style="font-size:1.1rem; margin-bottom:1rem; color: #00d4ff;">
                 📋 Quality of Life Scores
             </div>
         """, unsafe_allow_html=True)
