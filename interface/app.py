@@ -354,11 +354,11 @@ model_ai = genai.GenerativeModel(model_name=CURRENT_MODEL_NAME)
 
 # Local Knowledge Base (No-API Fallback)
 LOCAL_ADVICE = {
-    "Nausea": "🍋 Ginger tea, small bland meals (BRAT diet), and staying hydrated with electrolyte drinks.",
-    "Fatigue": "🔋 Schedule 'rest clusters' through the day. Short 20-min naps and gentle walking can help.",
-    "Neuropathy": "🧤 Keep hands/feet warm. Use loose-fitting socks. Avoid extreme temperatures. Consult for Vitamin B12.",
-    "Hematologic": "🥬 Increase intake of leafy greens, lentils, and lean proteins. Monitor for fever or bruising.",
-    "General": "🧘 Practice mindfulness, deep breathing, and stay connected with your support group."
+    "Nausea": "### 💊 Solutions & Medicines\n- Anti-nausea medications (antiemetics) prescribed by doctor\n- Ondansetron or Metoclopramide as needed\n\n### 🥗 Diet & Food\n- Ginger tea, small bland meals (BRAT diet)\n- Stay hydrated with electrolyte drinks, avoid greasy foods\n\n### 🌅 Daily Routine\n- Eat 5-6 small meals rather than 3 large ones\n- Rest with head elevated after eating\n\n### 🛡️ Safety Measures\n- Go to ER if unable to keep fluids down for 24 hours\n- Watch for signs of severe dehydration",
+    "Fatigue": "### 💊 Solutions & Medicines\n- Consult for Iron supplements if anemic\n- Avoid sleep medications unless prescribed\n\n### 🥗 Diet & Food\n- High-protein snacks, balanced meals\n- Stay fully hydrated, limit heavy sugars\n\n### 🌅 Daily Routine\n- Schedule 'rest clusters'. Short 20-min naps\n- Gentle 10-15 minute walking daily\n\n### 🛡️ Safety Measures\n- Avoid driving if severely fatigued\n- Watch for sudden extreme exhaustion (could indicate low counts)",
+    "Neuropathy": "### 💊 Solutions & Medicines\n- Gabapentin or pregabalin (ask doctor)\n- Vitamin B-complex supplements (if approved)\n\n### 🥗 Diet & Food\n- B12-rich foods (lean meats, fortified cereals)\n- Avoid excess alcohol and processed sugars\n\n### 🌅 Daily Routine\n- Wear loose, comfortable footwear\n- Gentle massages and warm foot baths\n\n### 🛡️ Safety Measures\n- Test water temp with thermometer before bathing\n- Keep hands/feet warm in cold weather",
+    "Hematologic": "### 💊 Solutions & Medicines\n- Growth factor injections (Neulasta) if prescribed\n- Strict adherence to prescribed antibiotics\n\n### 🥗 Diet & Food\n- Well-cooked foods only (neutropenic diet)\n- Avoid unpasteurized dairy and raw meats\n\n### 🌅 Daily Routine\n- Excellent hand hygiene, frequent washing\n- Avoid crowded places and sick individuals\n\n### 🛡️ Safety Measures\n- Immediate ER visit for fever over 100.4°F (38°C)\n- Avoid any activities with high risk of cuts/bleeding",
+    "General": "### 💊 Solutions & Medicines\n- Ensure all prescribed medications are taken on schedule\n- Ask doctor before taking any supplements\n\n### 🥗 Diet & Food\n- Balanced, nutrient-dense meals\n- 8-10 glasses of water daily\n\n### 🌅 Daily Routine\n- Practice mindfulness, gentle stretching\n- Stay connected with your support group\n\n### 🛡️ Safety Measures\n- Report any new or worsening symptoms immediately\n- Keep emergency contacts easily accessible"
 }
 
 RISK_COLOR = {"High": "#ff5252", "Medium": "#ffab40", "Low": "#00e676"}
@@ -425,13 +425,21 @@ def get_ai_recommendations(side_effect, risk_level, severity, age, stage):
     Severity: {severity}
     Overall Risk Level: {risk_level}
     
-    Please provide professional, concise recommendations in THREE sections:
-    1. SOLUTIONS & MEDICINES: Specifically for {side_effect} in breast cancer chemotherapy patients.
-    2. DIET & FOOD: What foods to eat or avoid to manage this side effect.
-    3. DAILY ROUTINE & REMEDIES: Lifestyle changes and non-medical remedies for {side_effect}.
+    Please provide professional, concise recommendations in EXACTLY these FOUR sections using EXACTLY these headings:
     
-    Use clear bullet points and markdown formatting. KEEP IT CONCISE and professional. 
-    Start directly with the first section.
+    ### 💊 Solutions & Medicines
+    Provide 3-4 bullet points on specific medications or medical interventions for {side_effect}.
+    
+    ### 🥗 Diet & Food
+    Provide 3-4 bullet points on foods to eat or avoid to manage this.
+    
+    ### 🌅 Daily Routine
+    Provide 3-4 bullet points on specific schedule adjustments and lifestyle remedies.
+    
+    ### 🛡️ Safety Measures
+    Provide 3-4 bullet points on precautions, when to consult a doctor, and warnings.
+    
+    Keep the content concise and professional. Do NOT include any intro or outro text, JUST the headings and bullet points.
     """
     
     try:
@@ -837,6 +845,29 @@ elif page == "🔬 Predict":
             if st.button("🔄 Reset", use_container_width=True):
                 st.rerun()
 
+        # Added Terminal Box on UI
+        st.markdown("""
+        <div class="terminal-header" style="margin-top:2rem;">
+            <span class="dot dot-red"></span>
+            <span class="dot dot-yellow"></span>
+            <span class="dot dot-green"></span>
+            <span style="margin-left:0.5rem; font-size:0.8rem; color:#7b8aad; font-family:'JetBrains Mono',monospace;">
+                System Logs (Live)
+            </span>
+        </div>
+        """, unsafe_allow_html=True)
+        
+        if st.session_state.log_lines:
+            # Show last 20 lines to save space
+            content = "<br>".join(st.session_state.log_lines[-20:])
+        else:
+            content = '<span style="color:#7b8aad;">$ Dashboard ready...</span>'
+            
+        st.markdown(
+            f'<div class="terminal-box" style="max-height: 250px;">{content}</div>',
+            unsafe_allow_html=True
+        )
+
     with col_result:
         st.markdown("""
         <div class="section-header" style="font-size:1.1rem;">📊 Prediction Results</div>
@@ -915,17 +946,40 @@ elif page == "🔬 Predict":
                     age, 
                     stage
                 )
+                
+                if "⚠️ AI Service Offline" in ai_advice:
+                    st.warning("⚠️ AI Service Offline. Showing basic fallback recommendations.")
+                    st.markdown(ai_advice)
+                else:
+                    parts = [p.strip() for p in ai_advice.split("### ") if p.strip()]
+                    cols = st.columns(2)
+                    for i, part in enumerate(parts):
+                        lines = part.split("\n", 1)
+                        if len(lines) == 2:
+                            title, content = lines[0].strip(), lines[1].strip()
+                            
+                            color_map = {"Solutions": "#e91e8c", "Diet": "#00e676", "Routine": "#00d4ff", "Safety": "#ffab40"}
+                            theme_color = next((color for key, color in color_map.items() if key.lower() in title.lower()), "#e91e8c")
+                            
+                            with cols[i % 2]:
+                                st.markdown(f"""
+                                <div style="background:rgba(17,24,39,0.8); border:1px solid rgba(255,255,255,0.07); 
+                                     border-top:3px solid {theme_color}; border-radius:12px; padding:1.2rem; margin-bottom:1rem; min-height:180px;">
+                                    <div style="font-size:1.1rem; color:{theme_color}; font-weight:700; margin-bottom:0.8rem;">
+                                        {title}
+                                    </div>
+                                    <div style="font-size:0.9rem; color:#f0f4ff; line-height:1.6;">
+                                """, unsafe_allow_html=True)
+                                st.markdown(content)
+                                st.markdown("</div></div>", unsafe_allow_html=True)
+
                 st.markdown(f"""
-                <div style="background:rgba(233,30,140,0.03); border:1px solid rgba(233,30,140,0.15); 
-                     border-radius:15px; padding:1.2rem; font-size:0.95rem; line-height:1.7; color:#f0f4ff;">
-                    {ai_advice}
-                    <hr style="margin:1.2rem 0; opacity:0.1; border-color:#e91e8c;">
-                    <div style="font-size:0.7rem; color:#7b8aad; text-align:center; font-style:italic;">
-                        ⚠️ AI recommendations are for support only. This is NOT medical advice. Always consult your oncologist before starting any new medications or lifestyle changes.
-                    </div>
+                <hr style="margin:1.2rem 0; opacity:0.1; border-color:#e91e8c;">
+                <div style="font-size:0.75rem; color:#7b8aad; text-align:center; font-style:italic;">
+                    ⚠️ AI recommendations are for support only. This is NOT medical advice. Always consult your oncologist before starting any new medications or lifestyle changes.
                 </div>
                 """, unsafe_allow_html=True)
-                status.update(label="✅ AI Care Plan Generated!", state="complete", expanded=True)
+                status.update(label="✅ AI Care Plan Generated!", state="complete", expanded=False)
 
 
         else:
@@ -1186,6 +1240,11 @@ elif page == "🤖 AI Assistant":
         st.write("4. Best breathing exercises for cancer-related anxiety?")
 
 
+
+# ════════════════════════════════════════════════════════════════════════════
+# PAGE: PIPELINE
+# ════════════════════════════════════════════════════════════════════════════
+elif page == "⚙️ Pipeline":
 
     st.markdown('<div class="hero-title" style="font-size:2rem;">⚙️ Training Pipeline</div>', unsafe_allow_html=True)
     st.markdown('<div class="hero-subtitle">Run the full AI training pipeline and view real-time terminal output.</div>', unsafe_allow_html=True)
