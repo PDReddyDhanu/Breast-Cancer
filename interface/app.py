@@ -48,8 +48,8 @@ st.markdown("""
     --bg-card2: #F8F9FA;
     --bg-input: #FFFFFF;
     --border: rgba(0, 0, 0, 0.1);
-    --text: #212529;
-    --text-muted: #6C757D;
+    --text: #000000;
+    --text-muted: #000000;
     --font: 'Inter', sans-serif;
     --mono: 'JetBrains Mono', monospace;
 }
@@ -805,8 +805,8 @@ if page == "🏠 Home":
                  border-radius:14px; padding:1rem; text-align:center; height:100%;">
                 <div style="font-size:2rem; margin-bottom:0.5rem;">{icon}</div>
                 <div style="font-size:0.65rem; color:#B8860B; font-weight:700; letter-spacing:0.1em; margin-bottom:0.3rem;">STEP {num}</div>
-                <div style="font-weight:700; font-size:0.85rem; margin-bottom:0.4rem; color:#212529;">{title}</div>
-                <div style="font-size:0.72rem; color:#6C757D; line-height:1.5;">{desc}</div>
+                <div style="font-weight:700; font-size:0.85rem; margin-bottom:0.4rem; color:#000000;">{title}</div>
+                <div style="font-size:0.72rem; color:#000000; line-height:1.5;">{desc}</div>
             </div>
             """, unsafe_allow_html=True)
 
@@ -817,13 +817,13 @@ if page == "🏠 Home":
 elif page == "🔬 Predict":
 
     st.markdown('<div class="hero-title" style="font-size:2rem; color: #B8860B;">🔬 Patient Prediction</div>', unsafe_allow_html=True)
-    st.markdown('<div class="hero-subtitle" style="color: #6C757D;">Enter patient Quality of Life (QoL) scores to get AI predictions.</div>', unsafe_allow_html=True)
+    st.markdown('<div class="hero-subtitle" style="color: #000000;">Enter patient Quality of Life (QoL) scores to get AI predictions.</div>', unsafe_allow_html=True)
 
     with st.expander("📊 Score Interpretation Guide (Click to Expand)", expanded=False):
         st.markdown("""
         <div style="background: #F8F9FA; padding: 15px; border-radius: 8px; border: 1px solid #D4AF37;">
         <h4 style="color: #D4AF37; margin-top:0;">0-30: Mild | 31-70: Moderate | 71-100: Severe</h4>
-        <ul style="color: #212529;">
+        <ul style="color: #000000;">
           <li><b>💪 Fatigue:</b> 0-30 Normal | 31-70 Weak | 71-100 Extreme</li>
           <li><b>🤢 Nausea:</b> 0-30 Little discomfort | 31-70 Vomiting sometimes | 71-100 Severe</li>
           <li><b>⚡ Neuropathy:</b> 0-30 Mild tingling | 31-70 Numbness/Pain | 71-100 Severe pain</li>
