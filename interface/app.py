@@ -5,13 +5,13 @@ import plotly.graph_objects as go
 import plotly.express as px
 import joblib
 import os
-import sys
-import subprocess
-from sklearn.neural_network import MLPClassifier
 from groq import Groq
+from pymongo.mongo_client import MongoClient
+from pymongo.server_api import ServerApi
 import threading
 import time
 import io
+import os
 from datetime import datetime
 from dotenv import load_dotenv
 
@@ -351,6 +351,27 @@ def get_groq_client():
         raise ValueError("Groq API Key not found.")
         
     return Groq(api_key=key)
+
+# ─── MongoDB Setup ────────────────────────────────────────────────────────
+@st.cache_resource
+def get_mongodb_collection():
+    uri = os.environ.get("MONGO_URI", "")
+    if getattr(st, 'secrets', None) and "MONGO_URI" in st.secrets:
+        uri = st.secrets["MONGO_URI"]
+        
+    if not uri:
+        st.warning("⚠️ MongoDB connection string (MONGO_URI) is missing. Predictions will not be tracked in the database.")
+        return None
+        
+    try:
+        client = MongoClient(uri, server_api=ServerApi('1'))
+        # Send a ping to confirm a successful connection
+        client.admin.command('ping')
+        db = client["breast_care_ai"]
+        return db["patient_predictions"]
+    except Exception as e:
+        st.error(f"⚠️ Failed to connect to MongoDB: {e}")
+        return None
 
 # Local Knowledge Base (No-API Fallback)
 LOCAL_ADVICE = {
@@ -806,9 +827,17 @@ elif page == "🔬 Predict":
         <div style="background:linear-gradient(135deg,#111827,#1a2235); border:1px solid rgba(255,255,255,0.07);
              border-radius:20px; padding:1.5rem 1.5rem 0.5rem 1.5rem; margin-bottom:1rem;">
             <div class="section-header" style="font-size:1.1rem; margin-bottom:1rem;">
-                👤 Patient Demographics
+                👤 Patient Demographics & Identity
             </div>
         """, unsafe_allow_html=True)
+        col_p1, col_p2 = st.columns(2)
+        with col_p1:
+            patient_name = st.text_input("Full Name", placeholder="e.g. Jane Doe")
+            patient_gender = st.selectbox("Gender", ["Female", "Male", "Other", "Prefer not to say"])
+        with col_p2:
+            patient_contact = st.text_input("Email/Contact", placeholder="e.g. patient@ext.com")
+            patient_blood = st.selectbox("Blood Group", ["Unknown", "A+", "A-", "B+", "B-", "O+", "O-", "AB+", "AB-"])
+            
         age = st.slider("Age (years)", 20, 80, 45, help="Patient's age in years")
         stage = st.selectbox("Cancer Stage", [1, 2, 3, 4], index=1, help="TNM cancer staging (1=Early, 4=Advanced)")
         st.markdown("</div>", unsafe_allow_html=True)
@@ -880,6 +909,39 @@ elif page == "🔬 Predict":
             with st.spinner("Running AI models..."):
                 result = predict(age, stage, fatigue, pain, emotion, physical, social, cognitive, sleep, appetite, prev_nausea, prev_neuro)
             st.session_state.predictions_history.append({**result, "age": age, "stage": stage})
+            
+            # Save to MongoDB Atlas
+            db_col = get_mongodb_collection()
+            if db_col is not None:
+                doc = {
+                    "patient": {
+                        "name": patient_name,
+                        "gender": patient_gender,
+                        "contact": patient_contact,
+                        "blood_group": patient_blood,
+                        "age": age,
+                        "cancer_stage": stage
+                    },
+                    "metrics": {
+                        "fatigue": fatigue, "pain": pain, "emotion": emotion,
+                        "physical": physical, "social": social, "cognitive": cognitive,
+                        "sleep": sleep, "appetite": appetite, 
+                        "prev_nausea": prev_nausea, "prev_neuro": prev_neuro
+                    },
+                    "prediction": {
+                        "side_effect": result['side_effect'],
+                        "confidence": result['confidence'],
+                        "toxicity_score": result['toxicity_score'],
+                        "severity": result['severity'],
+                        "risk_level": result['risk_level']
+                    },
+                    "timestamp": datetime.now()
+                }
+                try:
+                    db_col.insert_one(doc)
+                    st.toast("✅ Record saved securely to MongoDB Atlas!")
+                except Exception as e:
+                    st.toast(f"⚠️ Could not save to DB: {str(e)}")
 
             risk_col = RISK_COLOR.get(result["risk_level"], "#ffffff")
             sev_col = SEV_COLOR.get(result["severity"], "#ffffff")
