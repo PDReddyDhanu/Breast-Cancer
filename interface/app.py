@@ -8,7 +8,7 @@ import os
 import sys
 import subprocess
 from sklearn.neural_network import MLPClassifier
-import google.generativeai as genai
+from groq import Groq
 import threading
 import time
 import io
@@ -331,13 +331,15 @@ SRC_DIR = os.path.join(ROOT, "src")
 SIDE_EFFECT_LABELS = ["Fatigue", "Hematologic", "Nausea", "Neuropathy", "None"]
 RISK_LABELS_MAP = {0: "High", 1: "Low", 2: "Medium"}
 
-# ─── Gemini AI Setup ────────────────────────────────────────────────────────
-GEMINI_API_KEY = "AIzaSyCC66osWbTkW3_qY-GzgX8FecuNQHEN6Rs"
-genai.configure(api_key=GEMINI_API_KEY)
+# ─── Groq AI Setup ────────────────────────────────────────────────────────
+# Groq requires an API key, which users can input in the sidebar.
+CURRENT_MODEL_NAME = "llama3-8b-8192"
 
-# Initializing with the latest supported model
-CURRENT_MODEL_NAME = "gemini-1.5-flash"
-model_ai = genai.GenerativeModel(model_name=CURRENT_MODEL_NAME)
+def get_groq_client():
+    key = os.environ.get("GROQ_API_KEY", "")
+    if not key:
+        raise ValueError("Groq API Key not set.")
+    return Groq(api_key=key)
 
 # Local Knowledge Base (No-API Fallback)
 LOCAL_ADVICE = {
@@ -430,10 +432,13 @@ def get_ai_recommendations(side_effect, risk_level, severity, age, stage):
     """
     
     try:
-        # Final fallback check - ensure model is re-initialized if needed
-        global model_ai
-        response = model_ai.generate_content(prompt)
-        return response.text
+        client = get_groq_client()
+        response = client.chat.completions.create(
+            model=CURRENT_MODEL_NAME,
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.3
+        )
+        return response.choices[0].message.content
     except Exception as e:
         # Use Local Knowledge Base as Emergency Fallback
         advice = LOCAL_ADVICE.get(side_effect, LOCAL_ADVICE["General"])
@@ -603,6 +608,11 @@ with st.sidebar:
              margin:0.8rem auto 0 auto; border-radius:1px;"></div>
     </div>
     """, unsafe_allow_html=True)
+    
+    st.markdown("### AI Configuration")
+    groq_key = st.text_input("Groq API Key (Free)", type="password", help="Get a free key from console.groq.com")
+    if groq_key:
+        os.environ["GROQ_API_KEY"] = groq_key
 
     st.markdown("### Navigation")
     page = st.radio("", ["🏠 Home", "🔬 Predict", "📊 Analytics", "🤖 AI Assistant", "⚙️ Pipeline"], label_visibility="collapsed")
@@ -1196,8 +1206,13 @@ elif page == "🤖 AI Assistant":
                 - Provide practical remedies or advice.
                 - Always include a medical disclaimer at the end.
                 """
-                response = model_ai.generate_content(assistant_prompt)
-                ai_reply = response.text
+                client = get_groq_client()
+                response = client.chat.completions.create(
+                    model=CURRENT_MODEL_NAME,
+                    messages=[{"role": "user", "content": assistant_prompt}],
+                    temperature=0.3
+                )
+                ai_reply = response.choices[0].message.content
                 
                 st.markdown('<div class="section-header" style="font-size:1.1rem; color:#e91e8c; margin-top:1rem;">👩‍⚕️ AI Response</div>', unsafe_allow_html=True)
                 st.markdown(f"""
